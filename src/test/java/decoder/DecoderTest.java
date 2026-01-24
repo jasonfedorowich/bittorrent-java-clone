@@ -27,6 +27,13 @@ class DecoderTest {
         );
     }
 
+    static Stream<Arguments> encodedDict(){
+        return Stream.of(
+                Arguments.of("d3:foo3:bar5:helloi52ee", "{\"foo\":\"bar\",\"hello\":52}")
+        );
+    }
+
+
     @BeforeEach
     void setUp() {
     }
@@ -54,6 +61,13 @@ class DecoderTest {
     @ParameterizedTest
     @MethodSource("encodedLists")
     void testDecodeList(String encodedString, String expected) {
+        String decoded = new Decoder().decode(encodedString);
+        Assertions.assertEquals(expected, decoded);
+    }
+
+    @ParameterizedTest
+    @MethodSource("encodedDict")
+    void testDecodeDict(String encodedString, String expected) {
         String decoded = new Decoder().decode(encodedString);
         Assertions.assertEquals(expected, decoded);
     }

@@ -13,6 +13,8 @@ public class Decoder {
                 return decodeInteger(encodedString);
             case 'l':
                 return decodeList(encodedString);
+            case 'd':
+                return decodeDict(encodedString);
             default:
                 if(Character.isDigit(encodedString.charAt(pos))){
                     return decodeString(encodedString);
@@ -21,6 +23,20 @@ public class Decoder {
                 }
         }
     }
+
+    private String decodeDict(String encodedString) {
+        StringJoiner joiner = new StringJoiner(",", "{", "}");
+        pos++;
+        while(pos < encodedString.length() && encodedString.charAt(pos) != 'e'){
+            StringJoiner innerKeyValue = new StringJoiner(":");
+            innerKeyValue.add(decode(encodedString));
+            innerKeyValue.add(decode(encodedString));
+            joiner.add(innerKeyValue.toString());
+        }
+        pos++;
+        return joiner.toString();
+    }
+
 
     private String decodeList(String encodedString) {
         StringJoiner joiner = new StringJoiner(",", "[", "]");
