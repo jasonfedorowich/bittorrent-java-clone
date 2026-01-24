@@ -33,7 +33,7 @@ class DecoderTest {
         String testString = "3:abc";
 
         String decoded = new Decoder().decode(testString);
-        Assertions.assertEquals("abc", decoded);
+        Assertions.assertEquals("\"abc\"", decoded);
     }
 
     @ParameterizedTest
