@@ -1,6 +1,10 @@
 package decoder;
 
+import com.google.gson.Gson;
+
 public class Decoder {
+
+    private static final Gson gson = new Gson();
 
     static class StringDecoder {
         static String decode(String encodedString) {
@@ -12,7 +16,7 @@ public class Decoder {
                 }
             }
             int length = Integer.parseInt(encodedString.substring(0, firstColonIndex));
-            return encodedString.substring(firstColonIndex+1, firstColonIndex+1+length);
+            return gson.toJson(encodedString.substring(firstColonIndex+1, firstColonIndex+1+length));
         }
     }
 
