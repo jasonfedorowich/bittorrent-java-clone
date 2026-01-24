@@ -25,9 +25,10 @@ public class Decoder {
     private String decodeList(String encodedString) {
         StringJoiner joiner = new StringJoiner(",", "[", "]");
         pos++;
-        for(; pos < encodedString.length() && encodedString.charAt(pos) != 'e'; pos++){
+        while(pos<encodedString.length() && encodedString.charAt(pos) != 'e'){
             joiner.add(decode(encodedString));
         }
+        pos++;
         return joiner.toString();
     }
 
@@ -41,7 +42,7 @@ public class Decoder {
         int length = Integer.parseInt(encodedString.substring(start, pos));
         StringJoiner joiner = new StringJoiner("", "\"", "\"");
         joiner.add(encodedString.substring(pos+1, pos+1+length));
-        pos = pos + length;
+        pos = pos + length + 1;
         return joiner.toString();
     }
 
@@ -53,15 +54,4 @@ public class Decoder {
     }
 
 
-//    public String decode(String encodedString) {
-//        if(Character.isDigit(encodedString.charAt(0))) {
-//            return StringDecoder.decode(encodedString);
-//        }else if(encodedString.charAt(0) == 'i') {
-//            return IntegerDecoder.decode(encodedString);
-//        }else if(encodedString.charAt(0) == 'l') {
-//            return ListDecoder.decode(encodedString);
-//        }else{
-//            throw new UnsupportedOperationException("Not supported yet.");
-//        }
-//    }
 }

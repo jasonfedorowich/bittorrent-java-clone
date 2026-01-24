@@ -20,6 +20,13 @@ class DecoderTest {
         );
     }
 
+    static Stream<Arguments> encodedLists(){
+        return Stream.of(
+                Arguments.of("l5:helloi52ee", "[\"hello\",52]"),
+                Arguments.of("lli747e6:orangeee", "[[747,\"orange\"]]")
+        );
+    }
+
     @BeforeEach
     void setUp() {
     }
@@ -44,10 +51,10 @@ class DecoderTest {
 
     }
 
-    @Test
-    void testDecodeList(){
-        String encodedString = "l5:helloi52ee";
+    @ParameterizedTest
+    @MethodSource("encodedLists")
+    void testDecodeList(String encodedString, String expected) {
         String decoded = new Decoder().decode(encodedString);
-        Assertions.assertEquals("[\"hello\",52]", decoded);
+        Assertions.assertEquals(expected, decoded);
     }
 }
