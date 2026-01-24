@@ -43,4 +43,11 @@ class DecoderTest {
         Assertions.assertEquals(expected, decoded);
 
     }
+
+    @Test
+    void testDecodeList(){
+        String encodedString = "l5:helloi52ee";
+        String decoded = new Decoder().decode(encodedString);
+        Assertions.assertEquals("[\"hello\",52]", decoded);
+    }
 }
