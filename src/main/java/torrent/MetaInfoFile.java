@@ -1,6 +1,7 @@
 package torrent;
 
 import encoder.Bencoder;
+import hash.Hash;
 import objects.BencodedDictionary;
 import objects.BencodedString;
 
@@ -43,31 +44,22 @@ public class MetaInfoFile {
             return pieces;
         }
 
-        public String getHash(){
-            try {
-                List<Byte> encoding = new Bencoder().encode(info);
-                MessageDigest md = MessageDigest.getInstance("SHA-1");
-                byte[] bytes = new byte[encoding.size()];
-                for (int i = 0; i < encoding.size(); i++) {
-                    bytes[i] = encoding.get(i);
-                }
-                byte[] hash = md.digest(bytes);
-
-                StringBuilder hexString = new StringBuilder(2 * hash.length);
-                for (byte b : hash) {
-                    String hex = Integer.toHexString(0xff & b);
-                    if (hex.length() == 1) {
-                        hexString.append('0');
-                    }
-                    hexString.append(hex);
-                }
-                return hexString.toString();
-
-
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
+        public String getInfoHash(){
+           return Hash.hash(info);
         }
+
+        public List<String> getPiecesHashes(){
+            int i = 0;
+            List<String> hashes = new ArrayList<>();
+            while(i < pieces.size()){
+                List<Byte> bytes = pieces.getBytes().subList(i, i + 20);
+                hashes.add(Hash.hexify(bytes));
+                i += 20;
+            }
+            return hashes;
+        }
+
+
     }
 
     public static class Announce{
