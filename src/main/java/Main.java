@@ -1,4 +1,6 @@
 import decoder.*;
+import objects.BencodedDictionary;
+import objects.BencodedObject;
 import torrent.MetaInfoFile;
 
 import java.nio.file.Files;
@@ -30,6 +32,7 @@ public class Main {
         MetaInfoFile metaInfoFile = getMetaInfoFile(file);
         System.out.printf("Tracker URL: %s", metaInfoFile.getAnnounce().getUrl());
         System.out.printf("Length: %d", metaInfoFile.getInfo().getLength());
+        System.out.printf("Hash: %s", metaInfoFile.getInfo().getHash());
     }
     else {
       System.out.println("Unknown command: " + command);

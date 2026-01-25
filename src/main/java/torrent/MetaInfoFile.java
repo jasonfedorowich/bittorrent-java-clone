@@ -1,8 +1,13 @@
 package torrent;
 
-import decoder.BencodedDictionary;
-import decoder.BencodedObject;
-import decoder.BencodedString;
+import encoder.Bencoder;
+import objects.BencodedDictionary;
+import objects.BencodedString;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MetaInfoFile {
 
@@ -11,19 +16,15 @@ public class MetaInfoFile {
         private final String name;
         private final int pieceLength;
         private final BencodedString pieces;
+        private final BencodedDictionary info;
 
-        public Info(int length, String name, int pieceLength, BencodedString pieces) {
-            this.length = length;
-            this.name = name;
-            this.pieceLength = pieceLength;
-            this.pieces = pieces;
-        }
 
         public Info(BencodedDictionary dic) {
             this.length = Integer.parseInt(dic.get("length").getString());
             this.name = dic.get("name").getString();
             this.pieceLength = Integer.parseInt(dic.get("piece length").getString());
             this.pieces = (BencodedString) dic.get("pieces");
+            this.info = dic;
         }
 
         public int getLength() {
@@ -40,6 +41,32 @@ public class MetaInfoFile {
 
         public BencodedString getPieces() {
             return pieces;
+        }
+
+        public String getHash(){
+            try {
+                List<Byte> encoding = new Bencoder().encode(info);
+                MessageDigest md = MessageDigest.getInstance("SHA-1");
+                byte[] bytes = new byte[encoding.size()];
+                for (int i = 0; i < encoding.size(); i++) {
+                    bytes[i] = encoding.get(i);
+                }
+                byte[] hash = md.digest(bytes);
+
+                StringBuilder hexString = new StringBuilder(2 * hash.length);
+                for (byte b : hash) {
+                    String hex = Integer.toHexString(0xff & b);
+                    if (hex.length() == 1) {
+                        hexString.append('0');
+                    }
+                    hexString.append(hex);
+                }
+                return hexString.toString();
+
+
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

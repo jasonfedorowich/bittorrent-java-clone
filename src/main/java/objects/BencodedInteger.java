@@ -1,4 +1,4 @@
-package decoder;
+package objects;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,5 +26,10 @@ public class BencodedInteger extends BencodedObject {
     @Override
     public String getString() {
         return toString();
+    }
+
+    @Override
+    public List<Byte> getBytes() {
+        return bytes;
     }
 }

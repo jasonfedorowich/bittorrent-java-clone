@@ -1,4 +1,6 @@
-package decoder;
+package objects;
+
+import java.util.List;
 
 public abstract class BencodedObject {
 
@@ -20,5 +22,7 @@ public abstract class BencodedObject {
     }
 
     public abstract String getString();
+
+    public abstract List<Byte> getBytes();
 
 }

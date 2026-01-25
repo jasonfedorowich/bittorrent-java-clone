@@ -1,6 +1,8 @@
 package decoder;
 
 
+import objects.*;
+
 import java.nio.charset.StandardCharsets;
 
 public class ByteBendecoder {
@@ -13,6 +15,10 @@ public class ByteBendecoder {
 
     public ByteBendecoder(String bencodedString) {
         byteQueue = new ByteQueue(bencodedString.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public ByteBendecoder(byte[] bytes) {
+        byteQueue = new ByteQueue(bytes);
     }
 
     public BencodedObject decode(){
@@ -44,7 +50,8 @@ public class ByteBendecoder {
             if(!(bencodedObject instanceof BencodedString)){
                 throw new RuntimeException("Keys must be strings in dictionaries.");
             }
-            bencodedDictionary.put(bencodedObject.toString(), decode());
+            //todo
+            bencodedDictionary.put((BencodedString) bencodedObject, decode());
         }
         byteQueue.pop();
         return bencodedDictionary;

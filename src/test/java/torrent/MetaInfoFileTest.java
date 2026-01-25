@@ -1,7 +1,7 @@
 package torrent;
 
-import decoder.BencodedDictionary;
-import decoder.BencodedObject;
+import objects.BencodedDictionary;
+import objects.BencodedObject;
 import decoder.ByteQueue;
 import decoder.ByteBendecoder;
 import org.junit.jupiter.api.AfterEach;
@@ -37,5 +37,14 @@ class MetaInfoFileTest {
         Assertions.assertNotNull(metaInfoFile);
         Assertions.assertEquals("http://bittorrent-test-tracker.codecrafters.io/announce", metaInfoFile.getAnnounce().getUrl());
         Assertions.assertEquals(92063, metaInfoFile.getInfo().getLength());
+    }
+
+    @Test
+    void testSha1OfInfo(){
+        BencodedObject object = decoder.decode();
+        MetaInfoFile metaInfoFile = new MetaInfoFile((BencodedDictionary) object);
+        String sha1 = metaInfoFile.getInfo().getHash();
+        Assertions.assertNotNull(sha1);
+        Assertions.assertEquals("d69f91e6b2ae4c542468d1073a71d4ea13879a7f", sha1);
     }
 }
