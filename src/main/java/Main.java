@@ -1,5 +1,8 @@
-import com.google.gson.Gson;
-import decoder.Decoder;
+import decoder.*;
+import torrent.MetaInfoFile;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 // import com.dampcake.bencode.Bencode; - available if you need it!
 
 public class Main {
@@ -21,7 +24,14 @@ public class Main {
         }
         System.out.println(decoded);
 
-    } else {
+    } else if("info".equals(command)) {
+        String fileName = args[1];
+        byte[] file = Files.readAllBytes(Path.of(fileName));
+        MetaInfoFile metaInfoFile = getMetaInfoFile(file);
+        System.out.printf("Tracker URL: %s", metaInfoFile.getAnnounce().getUrl());
+        System.out.printf("Length: %d", metaInfoFile.getInfo().getLength());
+    }
+    else {
       System.out.println("Unknown command: " + command);
     }
 
@@ -29,5 +39,12 @@ public class Main {
 
   static String decodeBencode(String bencodedString) {
       return new Decoder().decode(bencodedString);
+  }
+
+  static MetaInfoFile getMetaInfoFile(byte[] bytes) {
+      ByteQueue queue = new ByteQueue(bytes);
+      ByteBendecoder decoder = new ByteBendecoder(queue);
+      BencodedObject object = decoder.decode();
+      return new MetaInfoFile((BencodedDictionary) object);
   }
 }

@@ -3,6 +3,7 @@ package decoder;
 
 import java.util.StringJoiner;
 
+@Deprecated
 public class Decoder {
 
     private int pos = 0;

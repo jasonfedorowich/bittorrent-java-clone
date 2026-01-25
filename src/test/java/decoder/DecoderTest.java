@@ -46,29 +46,29 @@ class DecoderTest {
     void testDecodeString() {
         String testString = "3:abc";
 
-        String decoded = new Decoder().decode(testString);
-        Assertions.assertEquals("\"abc\"", decoded);
+        BencodedObject decoded = new ByteBendecoder(testString).decode();
+        Assertions.assertEquals("\"abc\"", decoded.toString());
     }
 
     @ParameterizedTest
     @MethodSource("encodedIntegers")
     void testDecodeInteger(String encodedString, String expected) {
-        String decoded = new Decoder().decode(encodedString);
-        Assertions.assertEquals(expected, decoded);
+        BencodedObject decoded = new ByteBendecoder(encodedString).decode();
+        Assertions.assertEquals(expected, decoded.toString());
 
     }
 
     @ParameterizedTest
     @MethodSource("encodedLists")
     void testDecodeList(String encodedString, String expected) {
-        String decoded = new Decoder().decode(encodedString);
-        Assertions.assertEquals(expected, decoded);
+        BencodedObject decoded = new ByteBendecoder(encodedString).decode();
+        Assertions.assertEquals(expected, decoded.toString());
     }
 
     @ParameterizedTest
     @MethodSource("encodedDict")
     void testDecodeDict(String encodedString, String expected) {
-        String decoded = new Decoder().decode(encodedString);
-        Assertions.assertEquals(expected, decoded);
+        BencodedObject decoded = new ByteBendecoder(encodedString).decode();
+        Assertions.assertEquals(expected, decoded.toString());
     }
 }
