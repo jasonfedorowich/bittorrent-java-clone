@@ -32,7 +32,7 @@ public class Main {
         MetaInfoFile metaInfoFile = getMetaInfoFile(file);
         System.out.printf("Tracker URL: %s", metaInfoFile.getAnnounce().getUrl());
         System.out.printf("Length: %d", metaInfoFile.getInfo().getLength());
-        System.out.printf("Hash: %s", metaInfoFile.getInfo().getHash());
+        System.out.printf("Info Hash: %s", metaInfoFile.getInfo().getHash());
     }
     else {
       System.out.println("Unknown command: " + command);
