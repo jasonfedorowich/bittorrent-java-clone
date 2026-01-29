@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Hash {
 
-    public static String hash(BencodedObject bencodedObject) {
+    public static byte[] hash(BencodedObject bencodedObject) {
         try {
             List<Byte> encoding = new Bencoder().encode(bencodedObject);
             MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -17,18 +17,7 @@ public class Hash {
             for (int i = 0; i < encoding.size(); i++) {
                 bytes[i] = encoding.get(i);
             }
-            byte[] hash = md.digest(bytes);
-
-            StringBuilder hexString = new StringBuilder(2 * hash.length);
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
-
+            return md.digest(bytes);
 
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -37,6 +26,18 @@ public class Hash {
 
     public static String hexify(List<Byte> bytes) {
         StringBuilder hexString = new StringBuilder(2 * bytes.size());
+        for (byte b : bytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
+    public static String hexify(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder(2 * bytes.length);
         for (byte b : bytes) {
             String hex = Integer.toHexString(0xff & b);
             if (hex.length() == 1) {

@@ -1,12 +1,9 @@
 package torrent;
 
-import encoder.Bencoder;
 import hash.Hash;
 import objects.BencodedDictionary;
 import objects.BencodedString;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,8 +41,12 @@ public class MetaInfoFile {
             return pieces;
         }
 
-        public String getInfoHash(){
-           return Hash.hash(info);
+        public String getInfoHashHex(){
+           return Hash.hexify(Hash.hash(info));
+        }
+
+        public byte[] getInfoHash(){
+            return Hash.hash(info);
         }
 
         public List<String> getPiecesHashes(){

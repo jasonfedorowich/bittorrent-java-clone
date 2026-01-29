@@ -2,6 +2,7 @@ import decoder.*;
 import objects.BencodedDictionary;
 import objects.BencodedObject;
 import torrent.MetaInfoFile;
+import web.Tracker;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,12 +33,23 @@ public class Main {
         MetaInfoFile metaInfoFile = getMetaInfoFile(file);
         System.out.printf("Tracker URL: %s", metaInfoFile.getAnnounce().getUrl());
         System.out.printf("Length: %d", metaInfoFile.getInfo().getLength());
-        System.out.printf("Info Hash: %s", metaInfoFile.getInfo().getInfoHash());
+        System.out.printf("Info Hash: %s", metaInfoFile.getInfo().getInfoHashHex());
         System.out.printf("Piece Length: %d", metaInfoFile.getInfo().getPieceLength());
         System.out.println("Piece Hashes:");
         for(String hash : metaInfoFile.getInfo().getPiecesHashes()) {
             System.out.println(hash);
         }
+    }
+    else if("peers".equals(command)) {
+        String fileName = args[1];
+        byte[] file = Files.readAllBytes(Path.of(fileName));
+        MetaInfoFile metaInfoFile = getMetaInfoFile(file);
+        Tracker tracker = getTracker(metaInfoFile);
+        Tracker.TrackerResponse trackerResponse = tracker.track();
+        for(Tracker.Peer peer: trackerResponse.getPeers()) {
+            System.out.println(peer.toString());
+        }
+
     }
     else {
       System.out.println("Unknown command: " + command);
@@ -54,5 +66,9 @@ public class Main {
       ByteBendecoder decoder = new ByteBendecoder(queue);
       BencodedObject object = decoder.decode();
       return new MetaInfoFile((BencodedDictionary) object);
+  }
+
+  static Tracker getTracker(MetaInfoFile metaInfoFile) {
+      return new Tracker(metaInfoFile);
   }
 }

@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 class MetaInfoFileTest {
@@ -45,7 +44,7 @@ class MetaInfoFileTest {
     void testSha1fInfo(){
         BencodedObject object = decoder.decode();
         MetaInfoFile metaInfoFile = new MetaInfoFile((BencodedDictionary) object);
-        String sha1 = metaInfoFile.getInfo().getInfoHash();
+        String sha1 = metaInfoFile.getInfo().getInfoHashHex();
         Assertions.assertNotNull(sha1);
         Assertions.assertEquals("d69f91e6b2ae4c542468d1073a71d4ea13879a7f", sha1);
     }
