@@ -14,7 +14,7 @@ public class PeerConnection implements AutoCloseable {
     static class HandshakeMessage {
         private final byte[] peerId;
         HandshakeMessage(byte[] bytes) {
-            peerId = Arrays.copyOfRange(bytes, 47, 68);
+            peerId = Arrays.copyOfRange(bytes, 48, 68);
         }
 
         public byte[] getPeerId() {
