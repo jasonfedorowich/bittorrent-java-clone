@@ -37,7 +37,7 @@ private static void handshake(String[] args) throws IOException {
     String peerId = RandomString.generatePeerId();
     try (PeerConnection peerConnection = new PeerConnection(peerIpAndPort, metaInfoFile, peerId)) {
         String handshake = peerConnection.handshake();
-        System.out.printf("Peer ID: %s", handshake);
+        System.out.printf("Peer ID: %s\n", handshake);
     } catch (Exception e) {
         IO.println("Error handshake: " + e.getMessage());
     }
