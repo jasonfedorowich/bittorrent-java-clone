@@ -1,8 +1,8 @@
 package torrent;
 
-import hash.Hash;
 import objects.BencodedDictionary;
 import objects.BencodedString;
+import utils.hash.Hash;
 
 import java.util.ArrayList;
 import java.util.List;

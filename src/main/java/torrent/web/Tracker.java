@@ -1,4 +1,4 @@
-package web;
+package torrent.web;
 
 
 import decoder.ByteBendecoder;
@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.StringJoiner;
 import java.util.List;
+
+import static utils.generate.RandomString.generatePeerId;
 
 public class Tracker {
 
@@ -53,8 +55,8 @@ public class Tracker {
         }
 
         public int getPort(){
-            int j = bytes.get(bytes.size()-1);// < 0 ? bytes.get(bytes.size() - 1) + 256 : bytes.get(bytes.size() - 1);
-            int i = bytes.get(bytes.size()-2);// < 0 ? bytes.get(bytes.size() - 2) + 256 : bytes.get(bytes.size() - 2);
+            int j = bytes.get(bytes.size()-1);
+            int i = bytes.get(bytes.size()-2);
             int r = (i & 0xff) << 8;
             r = r | (j & 0xff);
             return r;
@@ -68,36 +70,27 @@ public class Tracker {
 
     private final OkHttpClient client;
     private final Request getRequest;
+    private final String peerId;
 
-    public Tracker(MetaInfoFile metaInfoFile) {
+
+    public Tracker(MetaInfoFile metaInfoFile, String peerId) {
         client = new OkHttpClient();
-        String peerId = "1234568910";
-       // byte[] infoHash = metaInfoFile.getInfo().getInfoHash();
         HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(metaInfoFile.getAnnounce().getUrl()).newBuilder();
         httpUrlBuilder.addEncodedQueryParameter("info_hash", encodeInfoHash(metaInfoFile.getInfo().getInfoHashHex()));
-        httpUrlBuilder.setQueryParameter("peer_id", generatePeerId());
+        this.peerId = peerId;
+        httpUrlBuilder.setQueryParameter("peer_id", this.peerId);
         httpUrlBuilder.setQueryParameter("port", "6881");
         httpUrlBuilder.setQueryParameter("uploaded", "0");
         httpUrlBuilder.setQueryParameter("downloaded", "0");
         httpUrlBuilder.setQueryParameter("left", String.valueOf(metaInfoFile.getInfo().getLength()));
         httpUrlBuilder.setQueryParameter("compact", "1");
         String url = httpUrlBuilder.build().toString();
-       // String encodedUrl = encodeInfoHash(metaInfoFile.getInfo().getInfoHashHex());
 
         getRequest = new Request.Builder().url(url).get().build();
     }
 
-    private String generatePeerId() {
-        String data = "abcdefghijklmnopqrstuvwxyz";
-        StringBuilder random = new Random()
-                .ints(20)
-                .collect(StringBuilder::new, (x, y)->{
-                    x.append(data.charAt(Math.abs(y % data.length())));
-                }, (x, y)->{
-
-                });
-        return random.toString();
-
+    public Tracker(MetaInfoFile metaInfoFile) {
+        this(metaInfoFile, generatePeerId());
     }
 
     private String encodeInfoHash(String infoHash) {
@@ -107,6 +100,10 @@ public class Tracker {
         }
        // return URLEncoder.encode(stringJoiner.toString());
         return stringJoiner.toString();
+    }
+
+    public String getPeerId() {
+        return peerId;
     }
 
     public TrackerResponse track() {

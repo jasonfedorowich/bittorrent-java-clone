@@ -1,4 +1,4 @@
-package web;
+package torrent.peer;
 
 import decoder.ByteBendecoder;
 import decoder.ByteQueue;
@@ -14,18 +14,25 @@ import torrent.web.Tracker;
 import java.io.IOException;
 import java.io.InputStream;
 
-class TrackerTest {
 
-    MetaInfoFile metaInfoFile;
+class PeerConnectionTest {
+
+    private PeerConnection peerConnection;
+    private MetaInfoFile metaInfoFile;
 
     @BeforeEach
     void setUp() throws IOException {
-        InputStream is = TrackerTest.class.getResourceAsStream("/sample.torrent");
+        InputStream is = PeerConnectionTest.class.getResourceAsStream("/sample.torrent");
         byte[] bytes = is.readAllBytes();
         ByteQueue queue = new ByteQueue(bytes);
         ByteBendecoder decoder = new ByteBendecoder(queue);
         BencodedObject object = decoder.decode();
         metaInfoFile = new MetaInfoFile((BencodedDictionary) object);
+        Tracker tracker = new Tracker(metaInfoFile);
+        Tracker.TrackerResponse response = tracker.track();
+        Tracker.Peer peer = response.getPeers().get(0);
+        peerConnection = new PeerConnection(peer.toString(), metaInfoFile, tracker.getPeerId());
+
     }
 
     @AfterEach
@@ -33,9 +40,8 @@ class TrackerTest {
     }
 
     @Test
-    void track() {
-        Tracker tracker = new Tracker(metaInfoFile);
-        Tracker.TrackerResponse trackerResponse = tracker.track();
-        Assertions.assertNotNull(trackerResponse);
+    void testHandshake() {
+        String peer = peerConnection.handshake();
+        Assertions.assertNotNull(peer);
     }
 }

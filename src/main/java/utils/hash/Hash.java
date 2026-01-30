@@ -1,4 +1,4 @@
-package hash;
+package utils.hash;
 
 import encoder.Bencoder;
 import objects.BencodedObject;
