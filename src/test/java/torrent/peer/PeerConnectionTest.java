@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import torrent.MetaInfoFile;
 import torrent.web.Tracker;
 
@@ -43,5 +45,15 @@ class PeerConnectionTest {
     void testHandshake() {
         String peer = peerConnection.handshake();
         Assertions.assertNotNull(peer);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 2})
+    void testDownloadPiece(int pieceNumber) {
+        String peer = peerConnection.handshake();
+        Assertions.assertNotNull(peer);
+
+        peerConnection.downloadPiece(pieceNumber, PeerConnectionTest.class.getResource("/test.file").getPath());
+
     }
 }

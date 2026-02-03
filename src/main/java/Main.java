@@ -24,9 +24,36 @@ void main(String[] args) throws Exception {
         case "handshake":
             handshake(args);
             break;
+        case "download_piece":
+            downloadPiece(args);
+            break;
 
     }
 
+}
+
+private void downloadPiece(String[] args) throws IOException {
+    if(args.length != 5)
+        throw new IllegalArgumentException("Download piece requires 5 arguments");
+    String arg = args[1];
+    if(!arg.equals("-o")) throw new IllegalArgumentException("Invalid download piece argument");
+    String outputFileName = args[2];
+    String torrentFileName = args[3];
+    int index = Integer.parseInt(args[4]);
+    byte[] file = Files.readAllBytes(Path.of(torrentFileName));
+    MetaInfoFile metaInfoFile = getMetaInfoFile(file);
+    Tracker tracker = getTracker(metaInfoFile);
+
+    Tracker.TrackerResponse response = tracker.track();
+    for(Tracker.Peer peer : response.getPeers()) {
+       try(PeerConnection peerConnection = new PeerConnection(peer, metaInfoFile, tracker.getPeerId())){
+           peerConnection.handshake();
+           peerConnection.downloadPiece(index, outputFileName);
+           break;
+       }catch(Exception e){
+           System.out.println(e.getMessage());
+       }
+    }
 }
 
 private static void handshake(String[] args) throws IOException {

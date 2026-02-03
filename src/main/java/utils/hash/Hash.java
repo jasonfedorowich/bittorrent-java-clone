@@ -47,4 +47,13 @@ public class Hash {
         }
         return hexString.toString();
     }
+
+    public static String hash(byte[] bytes) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            return hexify(md.digest(bytes));
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

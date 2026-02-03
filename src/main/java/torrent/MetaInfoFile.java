@@ -10,30 +10,34 @@ import java.util.List;
 public class MetaInfoFile {
 
     public static class Info{
-        private final int length;
+        private final long length;
         private final String name;
-        private final int pieceLength;
+        private final long pieceLength;
         private final BencodedString pieces;
         private final BencodedDictionary info;
 
 
         public Info(BencodedDictionary dic) {
-            this.length = Integer.parseInt(dic.get("length").getString());
+            this.length = Long.parseLong(dic.get("length").getString());
             this.name = dic.get("name").getString();
-            this.pieceLength = Integer.parseInt(dic.get("piece length").getString());
+            this.pieceLength = Long.parseLong(dic.get("piece length").getString());
             this.pieces = (BencodedString) dic.get("pieces");
             this.info = dic;
         }
 
-        public int getLength() {
+        public long getLength() {
             return length;
+        }
+
+        public long getPiecesCount(){
+            return length / pieceLength + (length % pieceLength > 0 ? 1 : 0);
         }
 
         public String getName() {
             return name;
         }
 
-        public int getPieceLength() {
+        public long getPieceLength() {
             return pieceLength;
         }
 
