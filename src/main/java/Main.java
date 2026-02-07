@@ -4,6 +4,7 @@ import decoder.Decoder;
 import objects.BencodedDictionary;
 import objects.BencodedObject;
 import torrent.MetaInfoFile;
+import torrent.download.Downloader;
 import torrent.peer.PeerConnection;
 import torrent.web.Tracker;
 import utils.generate.RandomString;
@@ -27,9 +28,32 @@ void main(String[] args) throws Exception {
         case "download_piece":
             downloadPiece(args);
             break;
+        case "download":
+            downloadFile(args);
+            break;
 
     }
 
+}
+
+private void downloadFile(String[] args) throws IOException {
+    if(args.length != 4)
+        throw new IllegalArgumentException("Download piece requires 5 arguments");
+    String arg = args[1];
+    if(!arg.equals("-o")) throw new IllegalArgumentException("Invalid download piece argument");
+    String outputFileName = args[2];
+    String torrentFileName = args[3];
+    byte[] file = Files.readAllBytes(Path.of(torrentFileName));
+    MetaInfoFile metaInfoFile = getMetaInfoFile(file);
+    Tracker tracker = getTracker(metaInfoFile);
+
+    Tracker.TrackerResponse response = tracker.track();
+
+    try(Downloader downloader = new Downloader(response, metaInfoFile, tracker.getPeerId())){
+        downloader.download(outputFileName);
+    }catch(Exception e){
+        e.printStackTrace();
+    }
 }
 
 private void downloadPiece(String[] args) throws IOException {

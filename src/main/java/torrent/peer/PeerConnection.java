@@ -93,8 +93,7 @@ public class PeerConnection implements AutoCloseable {
         }
     }
 
-
-    public void downloadPiece(int index, String output){
+    public byte[] downloadPiece(int index){
         try {
             DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
             DataInputStream dataInputStream = new DataInputStream(inputStream);
@@ -127,6 +126,16 @@ public class PeerConnection implements AutoCloseable {
 
             byte[] piece = concat(blocks);
             assertHash(piece, index);
+
+            return piece;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void downloadPiece(int index, String output){
+        try {
+            byte[] piece = downloadPiece(index);
 
             try(FileOutputStream fileOutputStream = new FileOutputStream(output)){
                 fileOutputStream.write(piece);
