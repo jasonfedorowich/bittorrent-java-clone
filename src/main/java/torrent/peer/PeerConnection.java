@@ -54,6 +54,7 @@ public class PeerConnection implements AutoCloseable {
     private final MetaInfoFile metaInfoFile;
     private final String peerId;
     private boolean hasBitField;
+    private boolean hasUnchoke;
 
 
     public PeerConnection(String peer, MetaInfoFile metaInfoFile, String peerId) {
@@ -150,10 +151,13 @@ public class PeerConnection implements AutoCloseable {
     }
 
     private void unchoke(DataInputStream dataInputStream) throws IOException {
-        System.out.println("Thread getting unchoke " + Thread.currentThread().threadId());
-        int size = dataInputStream.readInt();
-        byte messageId = dataInputStream.readByte();
-        if(messageId != 1) throw new RuntimeException("Invalid message id: " + messageId);
+        if(!hasUnchoke){
+            System.out.println("Thread getting unchoke " + Thread.currentThread().threadId());
+            int size = dataInputStream.readInt();
+            byte messageId = dataInputStream.readByte();
+            if(messageId != 1) throw new RuntimeException("Invalid message id: " + messageId);
+        }
+        hasUnchoke = true;
     }
 
     private void bitField(DataInputStream dataInputStream) throws IOException {
