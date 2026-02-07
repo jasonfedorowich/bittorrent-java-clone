@@ -150,6 +150,7 @@ public class PeerConnection implements AutoCloseable {
     }
 
     private void unchoke(DataInputStream dataInputStream) throws IOException {
+        System.out.println("Thread getting unchoke " + Thread.currentThread().threadId());
         int size = dataInputStream.readInt();
         byte messageId = dataInputStream.readByte();
         if(messageId != 1) throw new RuntimeException("Invalid message id: " + messageId);
@@ -157,6 +158,7 @@ public class PeerConnection implements AutoCloseable {
 
     private void bitField(DataInputStream dataInputStream) throws IOException {
         if(!hasBitField){
+            System.out.println("Thread getting bitfield " + Thread.currentThread().threadId());
             int size = dataInputStream.readInt();
             byte messageId = dataInputStream.readByte();
             if(messageId != 5) throw new RuntimeException("Invalid message id: " + messageId);
@@ -180,6 +182,7 @@ public class PeerConnection implements AutoCloseable {
     }
 
     private void interest(DataOutputStream dataOutputStream) throws IOException {
+        System.out.println("Thread getting interest " + Thread.currentThread().threadId());
         dataOutputStream.writeInt(1);
         dataOutputStream.writeByte(2);
         dataOutputStream.flush();
