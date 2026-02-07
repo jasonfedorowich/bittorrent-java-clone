@@ -86,7 +86,7 @@ public class Downloader implements AutoCloseable {
         };
     }
 
-    public void download(String outputFileName) throws FileNotFoundException, InterruptedException {
+    public void download(String outputFileName) throws IOException, InterruptedException {
         Deque<Integer> work = new ConcurrentLinkedDeque<>();
         int n = (int)metaInfoFile.getInfo().getPiecesCount();
         for(int i = 0; i < n; i++) {
@@ -109,6 +109,7 @@ public class Downloader implements AutoCloseable {
         }
         bufferThread.join();
         executorService.awaitTermination(10, TimeUnit.SECONDS);
+        fileOutputStream.flush();
 
     }
 
