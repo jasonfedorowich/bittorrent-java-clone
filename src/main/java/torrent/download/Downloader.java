@@ -74,7 +74,6 @@ public class Downloader implements AutoCloseable {
                 if(!buffer.isEmpty() && buffer.containsKey(index.get())) {
                     try {
                         System.out.println("Buffer " + index.get());
-                        System.out.println("Buffered bytes of size: " + buffer.get(index.get()).length);
                         fileOutputStream.write(buffer.get(index.getAndIncrement()));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
