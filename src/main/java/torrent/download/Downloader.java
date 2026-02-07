@@ -108,7 +108,8 @@ public class Downloader implements AutoCloseable {
             Runnable workUnit = worker.doWork(work, buffer);
             executorService.execute(workUnit);
         }
-
+        executorService.shutdown();
+        executorService.awaitTermination(1, TimeUnit.SECONDS);
         while(index.get() < n) {
             if(!buffer.isEmpty() && buffer.containsKey(index.get())) {
                 try {
