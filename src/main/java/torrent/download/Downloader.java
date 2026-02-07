@@ -108,7 +108,7 @@ public class Downloader implements AutoCloseable {
             executorService.execute(workUnit);
         }
         bufferThread.join();
-        executorService.awaitTermination(5, TimeUnit.SECONDS);
+        executorService.awaitTermination(100, TimeUnit.MILLISECONDS);
         fileOutputStream.flush();
 
     }
