@@ -99,8 +99,8 @@ public class Downloader implements AutoCloseable {
         FileOutputStream fileOutputStream = new FileOutputStream(outputFileName);
 
 
-        //Thread bufferThread = new Thread(bufferHandle(buffer, index, fileOutputStream, n));
-        //bufferThread.start();
+        Thread bufferThread = new Thread(bufferHandle(buffer, index, fileOutputStream, n));
+        bufferThread.start();
         ExecutorService executorService = Executors.newFixedThreadPool(connections.size());
 
         for(PeerConnection connection : this.connections) {
@@ -110,19 +110,8 @@ public class Downloader implements AutoCloseable {
         }
         executorService.shutdown();
         executorService.awaitTermination(1, TimeUnit.SECONDS);
-        while(index.get() < n) {
-            if(!buffer.isEmpty() && buffer.containsKey(index.get())) {
-                try {
-                    System.out.println("Buffer " + index.get());
-                    fileOutputStream.write(buffer.get(index.getAndIncrement()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        System.out.println("Finished buffering");
 
-        //bufferThread.join();
+        bufferThread.join();
         fileOutputStream.flush();
         fileOutputStream.close();
 
