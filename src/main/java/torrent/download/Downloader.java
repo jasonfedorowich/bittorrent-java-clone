@@ -24,7 +24,8 @@ public class Downloader implements AutoCloseable {
             return () -> {
                 while(!work.isEmpty()) {
                     int p = work.poll();
-                    System.out.println("Worker " + p + " started");
+                    System.out.println("Work " + p + " started");
+                    System.out.println("Worker started: " + Thread.currentThread().threadId());
                     try{
                         byte[] bytes = peerConnection.downloadPiece(p);
                         buffer.put(p, bytes);
@@ -33,7 +34,7 @@ public class Downloader implements AutoCloseable {
                         work.add(p);
                     }
 
-                    System.out.println("Worker " + p + " finished");
+                    System.out.println("Worker " +Thread.currentThread().threadId()+ " finished");
 
                 }
                 System.out.println("Worker " + Thread.currentThread().threadId() + " finalized");
