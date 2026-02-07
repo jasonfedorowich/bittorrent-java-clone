@@ -162,6 +162,7 @@ public class PeerConnection implements AutoCloseable {
             if(messageId != 5) throw new RuntimeException("Invalid message id: " + messageId);
             dataInputStream.readNBytes(size - 1);
         }
+        hasBitField = true;
 
     }
 
