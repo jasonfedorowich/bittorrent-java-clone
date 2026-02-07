@@ -95,7 +95,7 @@ public class Downloader implements AutoCloseable {
         }
         System.out.println("Downloading " + work.size() + " pieces");
 
-        Map<Integer, byte[]> buffer = new HashMap<>();
+        Map<Integer, byte[]> buffer = new ConcurrentHashMap<>();
         AtomicInteger index = new AtomicInteger(0);
         FileOutputStream fileOutputStream = new FileOutputStream(outputFileName);
 
