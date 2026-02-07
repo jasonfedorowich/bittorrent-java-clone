@@ -53,6 +53,8 @@ public class PeerConnection implements AutoCloseable {
     private final InputStream inputStream;
     private final MetaInfoFile metaInfoFile;
     private final String peerId;
+    private boolean hasBitField;
+
 
     public PeerConnection(String peer, MetaInfoFile metaInfoFile, String peerId) {
         String[] parts = peer.split(":");
@@ -154,10 +156,13 @@ public class PeerConnection implements AutoCloseable {
     }
 
     private void bitField(DataInputStream dataInputStream) throws IOException {
-        int size = dataInputStream.readInt();
-        byte messageId = dataInputStream.readByte();
-        if(messageId != 5) throw new RuntimeException("Invalid message id: " + messageId);
-        dataInputStream.readNBytes(size - 1);
+        if(!hasBitField){
+            int size = dataInputStream.readInt();
+            byte messageId = dataInputStream.readByte();
+            if(messageId != 5) throw new RuntimeException("Invalid message id: " + messageId);
+            dataInputStream.readNBytes(size - 1);
+        }
+
     }
 
     private PayloadMessage read(DataInputStream dataInputStream, int length) throws IOException {
