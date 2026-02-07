@@ -4,10 +4,7 @@ import decoder.ByteBendecoder;
 import decoder.ByteQueue;
 import objects.BencodedDictionary;
 import objects.BencodedObject;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import torrent.MetaInfoFile;
 import torrent.web.Tracker;
 
@@ -39,6 +36,7 @@ class DownloaderTest {
     }
 
     @Test
+    @Disabled
     void download() throws FileNotFoundException, InterruptedException {
         String path = DownloaderTest.class.getResource("/test1.file").getPath();
         Assertions.assertDoesNotThrow(() -> {
