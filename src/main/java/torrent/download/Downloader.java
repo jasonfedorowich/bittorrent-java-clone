@@ -36,7 +36,7 @@ public class Downloader implements AutoCloseable {
                     System.out.println("Worker " + p + " finished");
 
                 }
-                System.out.println("Worker " + Thread.currentThread().threadId() + " finished");
+                System.out.println("Worker " + Thread.currentThread().threadId() + " finalized");
             };
         }
     }
