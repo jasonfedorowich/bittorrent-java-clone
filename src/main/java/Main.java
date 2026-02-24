@@ -1,6 +1,7 @@
 import decoder.ByteBendecoder;
 import decoder.ByteQueue;
 import decoder.Decoder;
+import magnet.MagneticLinkV1;
 import objects.BencodedDictionary;
 import objects.BencodedObject;
 import torrent.MetaInfoFile;
@@ -31,9 +32,18 @@ void main(String[] args) throws Exception {
         case "download":
             downloadFile(args);
             break;
+        case "magnet_parse":
+            parseMagneticLink(args);
+            break;
 
     }
 
+}
+
+private void parseMagneticLink(String[] args) {
+    MagneticLinkV1 magneticLinkV1 = new MagneticLinkV1(args[1]);
+    System.out.printf("Tracker URL: %s", magneticLinkV1.getTracker());
+    System.out.printf("Info Hash: %s", magneticLinkV1.getInfoHash());
 }
 
 private void downloadFile(String[] args) throws IOException {
