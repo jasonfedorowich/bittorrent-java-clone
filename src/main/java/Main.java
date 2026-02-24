@@ -42,8 +42,8 @@ void main(String[] args) throws Exception {
 
 private void parseMagneticLink(String[] args) {
     MagneticLinkV1 magneticLinkV1 = new MagneticLinkV1(args[1]);
-    System.out.printf("Tracker URL: %s", magneticLinkV1.getTracker());
-    System.out.printf("Info Hash: %s", magneticLinkV1.getInfoHash());
+    System.out.printf("Tracker URL: %s\n", magneticLinkV1.getTracker());
+    System.out.printf("Info Hash: %s\n", magneticLinkV1.getInfoHash());
 }
 
 private void downloadFile(String[] args) throws IOException {
