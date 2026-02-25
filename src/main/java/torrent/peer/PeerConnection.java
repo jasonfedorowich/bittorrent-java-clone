@@ -222,7 +222,7 @@ public abstract class PeerConnection implements AutoCloseable {
         byteArrayOutputStream.write("BitTorrent protocol".getBytes(StandardCharsets.UTF_8));
         byte[] reservedBytes = new  byte[8];
         if(addExtension){
-            reservedBytes[2] = (byte)0x10;
+            reservedBytes[5] = (byte)0x10;
         }
         byteArrayOutputStream.write(reservedBytes);
         byteArrayOutputStream.write(getInfoHash());
