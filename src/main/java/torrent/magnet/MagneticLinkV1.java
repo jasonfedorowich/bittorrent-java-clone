@@ -1,4 +1,4 @@
-package magnet;
+package torrent.magnet;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;

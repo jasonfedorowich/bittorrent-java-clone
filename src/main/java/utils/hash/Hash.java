@@ -5,6 +5,7 @@ import objects.BencodedObject;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Hash {
@@ -34,6 +35,18 @@ public class Hash {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    public static byte[] deHexify(String hexString) {
+        List<Byte> bytes = new ArrayList<>();
+        for (int i = 0; i < hexString.length(); i += 2) {
+            bytes.add((byte) Integer.parseInt(hexString.substring(i, i + 2), 16));
+        }
+        byte[] byteArray = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++) {
+            byteArray[i] = bytes.get(i);
+        }
+        return byteArray;
     }
 
     public static String hexify(byte[] bytes) {

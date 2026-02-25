@@ -5,7 +5,7 @@ import decoder.ByteQueue;
 import objects.BencodedDictionary;
 import objects.BencodedObject;
 import org.junit.jupiter.api.*;
-import torrent.MetaInfoFile;
+import torrent.file.MetaInfoFile;
 import torrent.web.Tracker;
 
 import java.io.FileNotFoundException;

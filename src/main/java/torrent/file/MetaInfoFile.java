@@ -1,4 +1,4 @@
-package torrent;
+package torrent.file;
 
 import objects.BencodedDictionary;
 import objects.BencodedString;

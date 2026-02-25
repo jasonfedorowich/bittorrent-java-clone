@@ -1,12 +1,14 @@
 import decoder.ByteBendecoder;
 import decoder.ByteQueue;
 import decoder.Decoder;
-import magnet.MagneticLinkV1;
 import objects.BencodedDictionary;
+import torrent.magnet.MagneticLinkV1;
 import objects.BencodedObject;
-import torrent.MetaInfoFile;
+import torrent.file.MetaInfoFile;
 import torrent.download.Downloader;
 import torrent.peer.PeerConnection;
+import torrent.peer.PeerConnectionFromMagentic;
+import torrent.peer.PeerConnectionFromMetaInf;
 import torrent.web.Tracker;
 import utils.generate.RandomString;
 // import com.dampcake.bencode.Bencode; - available if you need it!
@@ -35,9 +37,25 @@ void main(String[] args) throws Exception {
         case "magnet_parse":
             parseMagneticLink(args);
             break;
+        case "magnet_handshake":
+            magneticHandshake(args);
+            break;
 
     }
 
+}
+
+private void magneticHandshake(String[] args) {
+    MagneticLinkV1 magneticLinkV1 = new MagneticLinkV1(args[1]);
+    Tracker tracker = new Tracker(magneticLinkV1);
+    Tracker.TrackerResponse response = tracker.track();
+    Tracker.Peer peer = response.getPeers().get(0);
+    try(PeerConnection peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
+        String peerId = peerConnection.handshake();
+        System.out.printf("Peer ID: %s", peerId);
+    }catch(Exception e){
+        IO.println(e.getMessage());
+    }
 }
 
 private void parseMagneticLink(String[] args) {
@@ -80,7 +98,7 @@ private void downloadPiece(String[] args) throws IOException {
 
     Tracker.TrackerResponse response = tracker.track();
     for(Tracker.Peer peer : response.getPeers()) {
-       try(PeerConnection peerConnection = new PeerConnection(peer, metaInfoFile, tracker.getPeerId())){
+       try(PeerConnection peerConnection = new PeerConnectionFromMetaInf(peer, metaInfoFile, tracker.getPeerId())){
            peerConnection.handshake();
            peerConnection.downloadPiece(index, outputFileName);
            break;
@@ -96,7 +114,7 @@ private static void handshake(String[] args) throws IOException {
     byte[] file = Files.readAllBytes(Path.of(fileName));
     MetaInfoFile metaInfoFile = getMetaInfoFile(file);
     String peerId = RandomString.generatePeerId();
-    try (PeerConnection peerConnection = new PeerConnection(peerIpAndPort, metaInfoFile, peerId)) {
+    try (PeerConnection peerConnection = new PeerConnectionFromMetaInf(peerIpAndPort, metaInfoFile, peerId)) {
         String handshake = peerConnection.handshake();
         System.out.printf("Peer ID: %s\n", handshake);
     } catch (Exception e) {

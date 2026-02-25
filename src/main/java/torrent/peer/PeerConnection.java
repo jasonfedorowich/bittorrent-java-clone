@@ -1,7 +1,6 @@
 package torrent.peer;
 
 import error.PieceHashException;
-import torrent.MetaInfoFile;
 import torrent.web.Tracker;
 import utils.hash.Hash;
 
@@ -10,7 +9,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class PeerConnection implements AutoCloseable {
+public abstract class PeerConnection implements AutoCloseable {
 
 
     static class HandshakeMessage {
@@ -51,21 +50,19 @@ public class PeerConnection implements AutoCloseable {
     private final Socket socket;
     private final OutputStream outputStream;
     private final InputStream inputStream;
-    private final MetaInfoFile metaInfoFile;
     private final String peerId;
     private boolean hasBitField;
     private boolean hasUnchoke;
 
 
-    public PeerConnection(String peer, MetaInfoFile metaInfoFile, String peerId) {
+    public PeerConnection(String peer, String peerId) {
         String[] parts = peer.split(":");
         String ip = parts[0];
         int port = Integer.parseInt(parts[1]);
-        this(ip, port, metaInfoFile, peerId);
+        this(ip, port, peerId);
     }
 
-    public PeerConnection(String ip, int port, MetaInfoFile metaInfoFile, String peerId) {
-        this.metaInfoFile = metaInfoFile;
+    public PeerConnection(String ip, int port, String peerId) {
         this.peerId = peerId;
         try {
             socket = new Socket(ip, port);
@@ -77,14 +74,14 @@ public class PeerConnection implements AutoCloseable {
 
     }
 
-    public PeerConnection(Tracker.Peer peer, MetaInfoFile metaInfoFile, String peerId) {
-        this(peer.getIp(), peer.getPort(), metaInfoFile, peerId);
+    public PeerConnection(Tracker.Peer peer, String peerId) {
+        this(peer.getIp(), peer.getPort(), peerId);
     }
 
 
-    public String handshake(){
+    public String handshake(boolean addExtensions){
         try {
-            byte[] message = handshakeMessage();
+            byte[] message = handshakeMessage(addExtensions);
             outputStream.write(message);
             outputStream.flush();
             byte[] handshakeResponse = inputStream.readNBytes(68);
@@ -94,6 +91,10 @@ public class PeerConnection implements AutoCloseable {
         }catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String handshake(){
+        return handshake(false);
     }
 
     public byte[] downloadPiece(int index){
@@ -193,7 +194,7 @@ public class PeerConnection implements AutoCloseable {
 
     private void assertHash(byte[] piece, int index) {
         String hash = Hash.hash(piece);
-        String expectedHash = metaInfoFile.getInfo().getPiecesHashes().get(index);
+        String expectedHash = getPiecesHashes().get(index);
         if(!expectedHash.equals(hash)) throw new PieceHashException(expectedHash, hash);
     }
 
@@ -212,15 +213,19 @@ public class PeerConnection implements AutoCloseable {
     }
 
     private long getPieceLength(int index) {
-        return Math.min(metaInfoFile.getInfo().getPieceLength(), metaInfoFile.getInfo().getLength() - ((long) index * metaInfoFile.getInfo().getPieceLength()));
+        return Math.min(getPieceLength(), getLength() - ((long) index * getPieceLength()));
     }
 
-    private byte[] handshakeMessage() throws IOException {
+    private byte[] handshakeMessage(boolean addExtension) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         byteArrayOutputStream.write((byte)19);
         byteArrayOutputStream.write("BitTorrent protocol".getBytes(StandardCharsets.UTF_8));
-        byteArrayOutputStream.write(new byte[8]);
-        byteArrayOutputStream.write(metaInfoFile.getInfo().getInfoHash());
+        byte[] reservedBytes = new  byte[8];
+        if(addExtension){
+            reservedBytes[2] = (byte)0x10;
+        }
+        byteArrayOutputStream.write(reservedBytes);
+        byteArrayOutputStream.write(getInfoHash());
         byteArrayOutputStream.write(peerId.getBytes(StandardCharsets.UTF_8));
         return byteArrayOutputStream.toByteArray();
 
@@ -232,4 +237,9 @@ public class PeerConnection implements AutoCloseable {
         outputStream.close();
         socket.close();
     }
+
+    public abstract byte[] getInfoHash();
+    public abstract long getPieceLength();
+    public abstract long getLength();
+    public abstract List<String> getPiecesHashes();
 }

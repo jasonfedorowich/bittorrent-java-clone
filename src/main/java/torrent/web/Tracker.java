@@ -2,21 +2,17 @@ package torrent.web;
 
 
 import decoder.ByteBendecoder;
+import torrent.magnet.MagneticLinkV1;
 import objects.BencodedDictionary;
 import objects.BencodedObject;
-import torrent.MetaInfoFile;
+import torrent.file.MetaInfoFile;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.StringJoiner;
 import java.util.List;
 
@@ -91,6 +87,22 @@ public class Tracker {
 
     public Tracker(MetaInfoFile metaInfoFile) {
         this(metaInfoFile, generatePeerId());
+    }
+
+    public Tracker(MagneticLinkV1 magneticLink) {
+        client = new OkHttpClient();
+        HttpUrl.Builder httpUrlBuilder = HttpUrl.parse(magneticLink.getTracker()).newBuilder();
+        httpUrlBuilder.addEncodedQueryParameter("info_hash", encodeInfoHash(magneticLink.getInfoHash()));
+        this.peerId = generatePeerId();
+        httpUrlBuilder.setQueryParameter("peer_id", this.peerId);
+        httpUrlBuilder.setQueryParameter("port", "6881");
+        httpUrlBuilder.setQueryParameter("uploaded", "0");
+        httpUrlBuilder.setQueryParameter("downloaded", "0");
+        httpUrlBuilder.setQueryParameter("left", "999");
+        httpUrlBuilder.setQueryParameter("compact", "1");
+        String url = httpUrlBuilder.build().toString();
+
+        getRequest = new Request.Builder().url(url).get().build();
     }
 
     private String encodeInfoHash(String infoHash) {

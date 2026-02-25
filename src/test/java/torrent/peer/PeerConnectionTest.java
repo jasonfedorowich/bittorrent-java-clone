@@ -7,7 +7,7 @@ import objects.BencodedObject;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import torrent.MetaInfoFile;
+import torrent.file.MetaInfoFile;
 import torrent.web.Tracker;
 
 import java.io.IOException;
@@ -30,7 +30,7 @@ class PeerConnectionTest {
         Tracker tracker = new Tracker(metaInfoFile);
         Tracker.TrackerResponse response = tracker.track();
         Tracker.Peer peer = response.getPeers().get(0);
-        peerConnection = new PeerConnection(peer.toString(), metaInfoFile, tracker.getPeerId());
+        peerConnection = new PeerConnectionFromMetaInf(peer.toString(), metaInfoFile, tracker.getPeerId());
 
     }
 

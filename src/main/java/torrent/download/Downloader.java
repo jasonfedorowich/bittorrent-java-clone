@@ -1,10 +1,10 @@
 package torrent.download;
 
-import torrent.MetaInfoFile;
+import torrent.file.MetaInfoFile;
 import torrent.peer.PeerConnection;
+import torrent.peer.PeerConnectionFromMetaInf;
 import torrent.web.Tracker;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -51,9 +51,10 @@ public class Downloader implements AutoCloseable {
         openConnections(response.getPeers());
     }
 
+
     private void openConnections(List<Tracker.Peer> peers) {
         for(Tracker.Peer peer : peers) {
-            PeerConnection peerConnection = new PeerConnection(peer, metaInfoFile, peerId);
+            PeerConnection peerConnection = new PeerConnectionFromMetaInf(peer, metaInfoFile, peerId);
             connections.add(peerConnection);
             peerConnection.handshake();
         }
