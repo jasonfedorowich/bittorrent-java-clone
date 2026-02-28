@@ -10,6 +10,17 @@ public class BencodedInteger extends BencodedObject {
         bytes = new ArrayList<>();
     }
 
+    public BencodedInteger(int value) {
+        super(ObjectType.INT);
+        bytes = new ArrayList<>();
+        String str = Integer.toString(value);
+        int i = 0;
+        while(i < str.length()) {
+            bytes.add((byte) str.charAt(i));
+            i++;
+        }
+    }
+
     public void add(byte byteValue) {
         bytes.add(byteValue);
     }

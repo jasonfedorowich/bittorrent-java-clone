@@ -1,6 +1,10 @@
 package torrent.peer;
 
+import decoder.ByteBendecoder;
+import encoder.Bencoder;
 import error.PieceHashException;
+import objects.BencodedDictionary;
+import objects.BencodedInteger;
 import torrent.web.Tracker;
 import utils.hash.Hash;
 
@@ -14,13 +18,26 @@ public abstract class PeerConnection implements AutoCloseable {
 
     static class HandshakeMessage {
         private final byte[] peerId;
+        private final boolean supportsExtensions;
         HandshakeMessage(byte[] bytes) {
             peerId = Arrays.copyOfRange(bytes, 48, 68);
+            byte[] reserved = Arrays.copyOfRange(bytes, 20, 28);
+            byte extensionByte = reserved[5];
+            supportsExtensions = extensionByte == 16;
         }
 
         public byte[] getPeerId() {
             return peerId;
         }
+
+        public String hexedPeerId() {
+            return Hash.hexify(peerId);
+        }
+
+        public boolean doesSupportExtension() {
+            return supportsExtensions;
+        }
+
     }
     static class PayloadMessage {
         private final int index;
@@ -80,21 +97,55 @@ public abstract class PeerConnection implements AutoCloseable {
 
 
     public String handshake(boolean addExtensions){
+        return baseHandShake(addExtensions).hexedPeerId();
+    }
+
+    private HandshakeMessage baseHandShake(boolean addExtensions){
         try {
             byte[] message = handshakeMessage(addExtensions);
             outputStream.write(message);
             outputStream.flush();
             byte[] handshakeResponse = inputStream.readNBytes(68);
-            HandshakeMessage handshakeMessage = new HandshakeMessage(handshakeResponse);
-            byte[] peerId = handshakeMessage.getPeerId();
-            return Hash.hexify(peerId);
+            return new HandshakeMessage(handshakeResponse);
         }catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+
+
     public String handshake(){
         return handshake(false);
+    }
+
+    public String handshakeWithExtension(){
+        HandshakeMessage handshake = baseHandShake(true);
+        if(!handshake.doesSupportExtension()) throw new RuntimeException("Handshake does not support extensions");
+        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        try {
+            bitField(dataInputStream);
+            BencodedDictionary bencodedDictionary = new BencodedDictionary();
+            BencodedDictionary innerDictionary = new BencodedDictionary();
+            innerDictionary.put("ut_metadata",  new BencodedInteger(16));
+            bencodedDictionary.put("m", innerDictionary);
+
+            Bencoder bencoder = new Bencoder();
+            List<Byte> bytes = bencoder.encode(bencodedDictionary);
+
+            dataOutputStream.writeInt(bytes.size() + 1 + 1);
+            dataOutputStream.write(20);
+            dataOutputStream.write(0);
+
+            for(int i = 0; i < bytes.size(); ++i){
+                dataOutputStream.write(bytes.get(i));
+            }
+            dataOutputStream.flush();
+
+            return handshake.hexedPeerId();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public byte[] downloadPiece(int index){

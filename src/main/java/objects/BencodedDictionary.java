@@ -11,8 +11,12 @@ public class BencodedDictionary extends BencodedObject implements Iterable<Benco
         dict = new TreeMap<>();
     }
 
-    public void put(BencodedString string, BencodedObject decode) {
-        dict.put(string, decode);
+    public void put(BencodedString string, BencodedObject object) {
+        dict.put(string, object);
+    }
+
+    public void put(String key, BencodedObject object) {
+        dict.put(new BencodedString(key), object);
     }
 
     public BencodedObject get(String string) {
