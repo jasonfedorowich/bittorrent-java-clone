@@ -30,7 +30,7 @@ class PeerConnectionMagneticLinkTest {
 
     @Test
     void testHandshake() {
-        String peer = peerConnection.handshakeWithExtension();
+        PeerConnection.HandshakeMessage peer = peerConnection.handshakeWithExtension();
         Assertions.assertNotNull(peer);
     }
 

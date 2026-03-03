@@ -43,4 +43,12 @@ public class BencodedInteger extends BencodedObject {
     public List<Byte> getBytes() {
         return bytes;
     }
+
+    public Integer toInteger() {
+        StringBuilder sb = new StringBuilder();
+        for (Byte b : bytes) {
+            sb.append((char)b.byteValue());
+        }
+        return Integer.parseInt(sb.toString());
+    }
 }

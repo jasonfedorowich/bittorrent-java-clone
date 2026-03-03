@@ -1,10 +1,12 @@
 package torrent.peer;
 
 import decoder.ByteBendecoder;
+import decoder.ByteQueue;
 import encoder.Bencoder;
 import error.PieceHashException;
 import objects.BencodedDictionary;
 import objects.BencodedInteger;
+import objects.BencodedObject;
 import torrent.web.Tracker;
 import utils.hash.Hash;
 
@@ -16,14 +18,24 @@ import java.util.*;
 public abstract class PeerConnection implements AutoCloseable {
 
 
-    static class HandshakeMessage {
+    public static class HandshakeMessage {
         private final byte[] peerId;
         private final boolean supportsExtensions;
+        private int extensionId;
+
         HandshakeMessage(byte[] bytes) {
             peerId = Arrays.copyOfRange(bytes, 48, 68);
             byte[] reserved = Arrays.copyOfRange(bytes, 20, 28);
             byte extensionByte = reserved[5];
             supportsExtensions = extensionByte == 16;
+        }
+
+        public void setExtensionId(int extensionId) {
+            this.extensionId = extensionId;
+        }
+
+        public int getExtensionId() {
+            return extensionId;
         }
 
         public byte[] getPeerId() {
@@ -118,7 +130,7 @@ public abstract class PeerConnection implements AutoCloseable {
         return handshake(false);
     }
 
-    public String handshakeWithExtension(){
+    public HandshakeMessage handshakeWithExtension(){
         HandshakeMessage handshake = baseHandShake(true);
         if(!handshake.doesSupportExtension()) throw new RuntimeException("Handshake does not support extensions");
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
@@ -142,10 +154,31 @@ public abstract class PeerConnection implements AutoCloseable {
             }
             dataOutputStream.flush();
 
-            return handshake.hexedPeerId();
+            BencodedDictionary extensionHandshake = readExtensionHandshake(dataInputStream);
+            BencodedDictionary inner = (BencodedDictionary) extensionHandshake.get("m");
+            BencodedInteger extensionId = (BencodedInteger)inner.get("ut_metadata");
+            handshake.setExtensionId(extensionId.toInteger());
+            return handshake;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private BencodedDictionary readExtensionHandshake(DataInputStream dataInputStream) throws IOException {
+        int size = dataInputStream.readInt();
+        byte messageId = dataInputStream.readByte();
+        if(messageId != 20){
+            throw new RuntimeException("Invalid message id: " + messageId);
+        }
+        byte extensionId = dataInputStream.readByte();
+        if(extensionId != 0){
+            throw new RuntimeException("Invalid extension id: " + extensionId);
+        }
+        byte[] rawBytes = dataInputStream.readNBytes(size - 2);
+        ByteQueue queue = new ByteQueue(rawBytes);
+        ByteBendecoder decoder = new ByteBendecoder(queue);
+        BencodedObject object = decoder.decode();
+        return (BencodedDictionary) object;
     }
 
     public byte[] downloadPiece(int index){
