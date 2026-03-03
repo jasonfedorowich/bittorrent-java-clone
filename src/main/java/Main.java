@@ -51,8 +51,9 @@ private void magneticHandshake(String[] args) {
     Tracker.TrackerResponse response = tracker.track();
     Tracker.Peer peer = response.getPeers().get(0);
     try(PeerConnection peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
-        String peerId = peerConnection.handshakeWithExtension().hexedPeerId();
-        System.out.printf("Peer ID: %s\n", peerId);
+        PeerConnection.HandshakeMessage handshakeMessage = peerConnection.handshakeWithExtension();
+        System.out.printf("Peer ID: %s\n", handshakeMessage.hexedPeerId());
+        System.out.printf("Peer Metadata Extension ID: %s\n", handshakeMessage.getExtensionId());
     }catch(Exception e){
         IO.println(e.getMessage());
     }
