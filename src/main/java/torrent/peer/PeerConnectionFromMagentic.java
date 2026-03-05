@@ -37,7 +37,7 @@ public class PeerConnectionFromMagentic extends PeerConnection {
 
     public void request() throws IOException {
         BencodedDictionary request = new BencodedDictionary();
-        request.put("message_type", new BencodedInteger(0));
+        request.put("msg_type", new BencodedInteger(0));
         request.put("piece", new BencodedInteger(0));
 
         Bencoder bencoder = new Bencoder();
