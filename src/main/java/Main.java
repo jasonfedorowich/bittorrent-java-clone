@@ -57,7 +57,7 @@ private void magnetInfo(String[] args){
         peerConnection.handshakeWithExtension();
         PeerConnectionFromMagentic.MagneticInfo magneticInfo = peerConnection.request();
         System.out.printf("Tracker URL: %s\n", magneticLinkV1.getTracker());
-        System.out.printf("LengthL: %s\n", magneticInfo.getLength());
+        System.out.printf("Length: %s\n", magneticInfo.getLength());
         System.out.printf("Info Hash: %s\n", magneticLinkV1.getInfoHash());
         System.out.printf("Piece Length: %s\n", magneticInfo.getPieceLength());
         System.out.println("Piece Hashes:");
