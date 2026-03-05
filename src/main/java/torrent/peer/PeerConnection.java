@@ -76,12 +76,14 @@ public abstract class PeerConnection implements AutoCloseable {
         }
     }
 
-    private final Socket socket;
-    private final OutputStream outputStream;
-    private final InputStream inputStream;
-    private final String peerId;
-    private boolean hasBitField;
-    private boolean hasUnchoke;
+    protected final Socket socket;
+    protected final OutputStream outputStream;
+    protected final InputStream inputStream;
+    protected final DataOutputStream dataOutputStream;
+    protected final DataInputStream dataInputStream;
+    protected final String peerId;
+    protected boolean hasBitField;
+    protected boolean hasUnchoke;
 
 
     public PeerConnection(String peer, String peerId) {
@@ -97,6 +99,8 @@ public abstract class PeerConnection implements AutoCloseable {
             socket = new Socket(ip, port);
             outputStream = socket.getOutputStream();
             inputStream = socket.getInputStream();
+            dataOutputStream = new DataOutputStream(outputStream);
+            dataInputStream = new DataInputStream(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -112,7 +116,7 @@ public abstract class PeerConnection implements AutoCloseable {
         return baseHandShake(addExtensions).hexedPeerId();
     }
 
-    private HandshakeMessage baseHandShake(boolean addExtensions){
+    protected HandshakeMessage baseHandShake(boolean addExtensions){
         try {
             byte[] message = handshakeMessage(addExtensions);
             outputStream.write(message);
@@ -130,61 +134,8 @@ public abstract class PeerConnection implements AutoCloseable {
         return handshake(false);
     }
 
-    public HandshakeMessage handshakeWithExtension(){
-        HandshakeMessage handshake = baseHandShake(true);
-        if(!handshake.doesSupportExtension()) throw new RuntimeException("Handshake does not support extensions");
-        DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-        DataInputStream dataInputStream = new DataInputStream(inputStream);
-        try {
-            bitField(dataInputStream);
-            BencodedDictionary bencodedDictionary = new BencodedDictionary();
-            BencodedDictionary innerDictionary = new BencodedDictionary();
-            innerDictionary.put("ut_metadata",  new BencodedInteger(16));
-            bencodedDictionary.put("m", innerDictionary);
-
-            Bencoder bencoder = new Bencoder();
-            List<Byte> bytes = bencoder.encode(bencodedDictionary);
-
-            dataOutputStream.writeInt(bytes.size() + 1 + 1);
-            dataOutputStream.write(20);
-            dataOutputStream.write(0);
-
-            for(int i = 0; i < bytes.size(); ++i){
-                dataOutputStream.write(bytes.get(i));
-            }
-            dataOutputStream.flush();
-
-            BencodedDictionary extensionHandshake = readExtensionHandshake(dataInputStream);
-            BencodedDictionary inner = (BencodedDictionary) extensionHandshake.get("m");
-            BencodedInteger extensionId = (BencodedInteger)inner.get("ut_metadata");
-            handshake.setExtensionId(extensionId.toInteger());
-            return handshake;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private BencodedDictionary readExtensionHandshake(DataInputStream dataInputStream) throws IOException {
-        int size = dataInputStream.readInt();
-        byte messageId = dataInputStream.readByte();
-        if(messageId != 20){
-            throw new RuntimeException("Invalid message id: " + messageId);
-        }
-        byte extensionId = dataInputStream.readByte();
-        if(extensionId != 0){
-            throw new RuntimeException("Invalid extension id: " + extensionId);
-        }
-        byte[] rawBytes = dataInputStream.readNBytes(size - 2);
-        ByteQueue queue = new ByteQueue(rawBytes);
-        ByteBendecoder decoder = new ByteBendecoder(queue);
-        BencodedObject object = decoder.decode();
-        return (BencodedDictionary) object;
-    }
-
     public byte[] downloadPiece(int index){
         try {
-            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-            DataInputStream dataInputStream = new DataInputStream(inputStream);
 
             bitField(dataInputStream);
             interest(dataOutputStream);
@@ -244,7 +195,7 @@ public abstract class PeerConnection implements AutoCloseable {
         hasUnchoke = true;
     }
 
-    private void bitField(DataInputStream dataInputStream) throws IOException {
+    protected void bitField(DataInputStream dataInputStream) throws IOException {
         if(!hasBitField){
             int size = dataInputStream.readInt();
             byte messageId = dataInputStream.readByte();

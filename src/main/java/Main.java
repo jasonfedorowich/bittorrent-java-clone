@@ -40,9 +40,25 @@ void main(String[] args) throws Exception {
         case "magnet_handshake":
             magneticHandshake(args);
             break;
+        case "magnet_info":
+            magnetInfo(args);
+            break;
 
     }
 
+}
+
+private void magnetInfo(String[] args){
+    MagneticLinkV1 magneticLinkV1 = new MagneticLinkV1(args[1]);
+    Tracker tracker = new Tracker(magneticLinkV1);
+    Tracker.TrackerResponse response = tracker.track();
+    Tracker.Peer peer = response.getPeers().get(0);
+    try(PeerConnectionFromMagentic peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
+        PeerConnection.HandshakeMessage handshakeMessage = peerConnection.handshakeWithExtension();
+        peerConnection.request();
+    }catch(Exception e){
+        IO.println(e.getMessage());
+    }
 }
 
 private void magneticHandshake(String[] args) {
@@ -50,7 +66,7 @@ private void magneticHandshake(String[] args) {
     Tracker tracker = new Tracker(magneticLinkV1);
     Tracker.TrackerResponse response = tracker.track();
     Tracker.Peer peer = response.getPeers().get(0);
-    try(PeerConnection peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
+    try(PeerConnectionFromMagentic peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
         PeerConnection.HandshakeMessage handshakeMessage = peerConnection.handshakeWithExtension();
         System.out.printf("Peer ID: %s\n", handshakeMessage.hexedPeerId());
         System.out.printf("Peer Metadata Extension ID: %s\n", handshakeMessage.getExtensionId());

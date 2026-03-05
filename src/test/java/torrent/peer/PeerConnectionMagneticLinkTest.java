@@ -11,7 +11,7 @@ import java.io.IOException;
 
 class PeerConnectionMagneticLinkTest {
 
-    private PeerConnection peerConnection;
+    private PeerConnectionFromMagentic peerConnection;
     private MagneticLinkV1 magneticLink;
 
     @BeforeEach
