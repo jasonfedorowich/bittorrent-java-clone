@@ -6,19 +6,62 @@ import encoder.Bencoder;
 import objects.BencodedDictionary;
 import objects.BencodedInteger;
 import objects.BencodedObject;
-import torrent.file.MetaInfoFile;
+import objects.BencodedString;
 import torrent.magnet.MagneticLinkV1;
 import torrent.web.Tracker;
 import utils.hash.Hash;
 
-import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PeerConnectionFromMagentic extends PeerConnection {
 
+    public static class MagneticInfo{
+
+        private final int pieceLength;
+        private final BencodedString pieces;
+        private final String name;
+        private final int length;
+
+        public MagneticInfo(BencodedDictionary contents) {
+            this.pieceLength = ((BencodedInteger)contents.get("piece length")).toInteger();
+            this.name = ((BencodedString)contents.get("name")).getString();
+            this.length = ((BencodedInteger)contents.get("length")).toInteger();
+            this.pieces = (BencodedString)contents.get("pieces");
+        }
+
+        public List<String> getPiecesHashes(){
+            int i = 0;
+            List<String> hashes = new ArrayList<>();
+            while(i < pieces.size()){
+                List<Byte> bytes = pieces.getBytes().subList(i, i + 20);
+                hashes.add(Hash.hexify(bytes));
+                i += 20;
+            }
+            return hashes;
+        }
+
+        public int getPieceLength() {
+            return pieceLength;
+        }
+
+        public BencodedString getPieces() {
+            return pieces;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getLength() {
+            return length;
+        }
+    }
+
     private final MagneticLinkV1 magneticLink;
     private BencodedInteger extensionId;
+    private Integer peerExtensionId = 16;
 
     public PeerConnectionFromMagentic(String peer, MagneticLinkV1 magneticLinkV1, String peerId) {
         this.magneticLink = magneticLinkV1;
@@ -35,7 +78,41 @@ public class PeerConnectionFromMagentic extends PeerConnection {
         super(peer, peerId);
     }
 
-    public void request() throws IOException {
+    public MagneticInfo request() throws IOException {
+        sendRequest();
+        return receiveResponse();
+    }
+
+    private MagneticInfo receiveResponse() throws IOException {
+        byte[] rawBytes = readExtensionMessage(peerExtensionId.byteValue());
+        ByteQueue queue = new ByteQueue(rawBytes);
+        ByteBendecoder decoder = new ByteBendecoder(queue);
+        BencodedDictionary dict = (BencodedDictionary)decoder.decode();
+        validateRequest(dict);
+        return new MagneticInfo((BencodedDictionary)decoder.decode());
+
+    }
+
+    private void validateRequest(BencodedDictionary dict) {
+        BencodedInteger msgType = (BencodedInteger)dict.get("msg_type");
+        if(!msgType.toInteger().equals(1)) throw new RuntimeException("Invalid msg_type");
+
+    }
+
+    private byte[] readExtensionMessage(byte expectedExtensionId) throws IOException {
+        int size = dataInputStream.readInt();
+        byte messageId = dataInputStream.readByte();
+        if(messageId != 20){
+            throw new RuntimeException("Invalid message id: " + messageId);
+        }
+        byte extensionId = dataInputStream.readByte();
+        if(extensionId != expectedExtensionId){
+            throw new RuntimeException("Invalid extension id: " + extensionId);
+        }
+        return dataInputStream.readNBytes(size - 2);
+    }
+
+    private void sendRequest() throws IOException {
         BencodedDictionary request = new BencodedDictionary();
         request.put("msg_type", new BencodedInteger(0));
         request.put("piece", new BencodedInteger(0));
@@ -60,7 +137,7 @@ public class PeerConnectionFromMagentic extends PeerConnection {
             bitField(dataInputStream);
             BencodedDictionary bencodedDictionary = new BencodedDictionary();
             BencodedDictionary innerDictionary = new BencodedDictionary();
-            innerDictionary.put("ut_metadata",  new BencodedInteger(16));
+            innerDictionary.put("ut_metadata",  new BencodedInteger(peerExtensionId));
             bencodedDictionary.put("m", innerDictionary);
 
             Bencoder bencoder = new Bencoder();
@@ -75,7 +152,7 @@ public class PeerConnectionFromMagentic extends PeerConnection {
             }
             dataOutputStream.flush();
 
-            BencodedDictionary extensionHandshake = readExtensionHandshake(dataInputStream);
+            BencodedDictionary extensionHandshake = readExtensionHandshake();
             BencodedDictionary inner = (BencodedDictionary) extensionHandshake.get("m");
             BencodedInteger extensionId = (BencodedInteger)inner.get("ut_metadata");
             this.extensionId = extensionId;
@@ -86,17 +163,8 @@ public class PeerConnectionFromMagentic extends PeerConnection {
         }
     }
 
-    private BencodedDictionary readExtensionHandshake(DataInputStream dataInputStream) throws IOException {
-        int size = dataInputStream.readInt();
-        byte messageId = dataInputStream.readByte();
-        if(messageId != 20){
-            throw new RuntimeException("Invalid message id: " + messageId);
-        }
-        byte extensionId = dataInputStream.readByte();
-        if(extensionId != 0){
-            throw new RuntimeException("Invalid extension id: " + extensionId);
-        }
-        byte[] rawBytes = dataInputStream.readNBytes(size - 2);
+    private BencodedDictionary readExtensionHandshake() throws IOException {
+        byte[] rawBytes = readExtensionMessage((byte) 0);
         ByteQueue queue = new ByteQueue(rawBytes);
         ByteBendecoder decoder = new ByteBendecoder(queue);
         BencodedObject object = decoder.decode();

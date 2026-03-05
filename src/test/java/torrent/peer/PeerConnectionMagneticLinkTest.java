@@ -34,6 +34,13 @@ class PeerConnectionMagneticLinkTest {
         Assertions.assertNotNull(peer);
     }
 
+    @Test
+    void testRequest() throws IOException {
+        PeerConnection.HandshakeMessage peer = peerConnection.handshakeWithExtension();
+        Assertions.assertNotNull(peer);
+        peerConnection.request();
+    }
+
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2})
     @Disabled
