@@ -11,8 +11,8 @@ public class DownloaderForMetaInf extends Downloader {
 
     private final MetaInfoFile metaInfoFile;
     public DownloaderForMetaInf(Tracker.TrackerResponse response, String peerId, MetaInfoFile metaInfoFile) {
-        super(response, peerId);
         this.metaInfoFile = metaInfoFile;
+        super(response, peerId);
     }
 
     public void openConnections(List<Tracker.Peer> peers) {
