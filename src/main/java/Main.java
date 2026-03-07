@@ -43,9 +43,35 @@ void main(String[] args) throws Exception {
         case "magnet_info":
             magnetInfo(args);
             break;
+        case "magnet_download_piece":
+            magnetDownloadPiece(args);
+            break;
 
     }
 
+}
+
+private void magnetDownloadPiece(String[] args) throws IOException {
+    if(args.length != 5)
+        throw new IllegalArgumentException("Download piece requires 5 arguments");
+    String arg = args[1];
+    if(!arg.equals("-o")) throw new IllegalArgumentException("Invalid download piece argument");
+
+    String outputFileName = args[2];
+    MagneticLinkV1 magneticLinkV1 = new MagneticLinkV1(args[3]);
+    int index = Integer.parseInt(args[4]);
+
+    Tracker tracker = new Tracker(magneticLinkV1);
+    Tracker.TrackerResponse response = tracker.track();
+    for(Tracker.Peer peer : response.getPeers()) {
+        try(PeerConnection peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
+            peerConnection.handshake();
+            peerConnection.downloadPiece(index, outputFileName);
+            break;
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
 }
 
 private void magnetInfo(String[] args){

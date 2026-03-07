@@ -19,10 +19,10 @@ public class PeerConnectionFromMagentic extends PeerConnection {
 
     public static class MagneticInfo{
 
-        private final int pieceLength;
+        private final long pieceLength;
         private final BencodedString pieces;
         private final String name;
-        private final int length;
+        private final long length;
 
         public MagneticInfo(BencodedDictionary contents) {
             this.pieceLength = ((BencodedInteger)contents.get("piece length")).toInteger();
@@ -42,7 +42,7 @@ public class PeerConnectionFromMagentic extends PeerConnection {
             return hashes;
         }
 
-        public int getPieceLength() {
+        public long getPieceLength() {
             return pieceLength;
         }
 
@@ -54,14 +54,16 @@ public class PeerConnectionFromMagentic extends PeerConnection {
             return name;
         }
 
-        public int getLength() {
+        public long getLength() {
             return length;
         }
     }
 
     private final MagneticLinkV1 magneticLink;
     private BencodedInteger extensionId;
+    //todo change this
     private Integer peerExtensionId = 16;
+    private MagneticInfo magneticInfo;
 
     public PeerConnectionFromMagentic(String peer, MagneticLinkV1 magneticLinkV1, String peerId) {
         this.magneticLink = magneticLinkV1;
@@ -79,8 +81,11 @@ public class PeerConnectionFromMagentic extends PeerConnection {
     }
 
     public MagneticInfo request() throws IOException {
-        sendRequest();
-        return receiveResponse();
+        if(this.magneticInfo == null) {
+            sendRequest();
+            this.magneticInfo = receiveResponse();
+        }
+        return magneticInfo;
     }
 
     private MagneticInfo receiveResponse() throws IOException {
@@ -178,16 +183,16 @@ public class PeerConnectionFromMagentic extends PeerConnection {
 
     @Override
     public long getPieceLength() {
-        return 0;
+        return magneticInfo.getPieceLength();
     }
 
     @Override
     public long getLength() {
-        return 0;
+        return magneticInfo.getLength();
     }
 
     @Override
     public List<String> getPiecesHashes() {
-        return List.of();
+        return magneticInfo.getPiecesHashes();
     }
 }

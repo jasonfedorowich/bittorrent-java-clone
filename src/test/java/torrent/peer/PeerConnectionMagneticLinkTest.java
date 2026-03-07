@@ -38,14 +38,16 @@ class PeerConnectionMagneticLinkTest {
     void testRequest() throws IOException {
         PeerConnection.HandshakeMessage peer = peerConnection.handshakeWithExtension();
         Assertions.assertNotNull(peer);
-        peerConnection.request();
+        Assertions.assertNotNull(peerConnection.request());
     }
 
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2})
     @Disabled
-    void testDownloadPiece(int pieceNumber) {
-        String peer = peerConnection.handshake();
+    void testDownloadPiece(int pieceNumber) throws IOException {
+
+        PeerConnection.HandshakeMessage peer = peerConnection.handshakeWithExtension();
+        peerConnection.request();
         Assertions.assertNotNull(peer);
 
         peerConnection.downloadPiece(pieceNumber, PeerConnectionMagneticLinkTest.class.getResource("/test.file").getPath());
