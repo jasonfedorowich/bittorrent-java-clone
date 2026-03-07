@@ -64,8 +64,9 @@ private void magnetDownloadPiece(String[] args) throws IOException {
     Tracker tracker = new Tracker(magneticLinkV1);
     Tracker.TrackerResponse response = tracker.track();
     for(Tracker.Peer peer : response.getPeers()) {
-        try(PeerConnection peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
-            peerConnection.handshake();
+        try(PeerConnectionFromMagentic peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
+            peerConnection.handshakeWithExtension();
+            peerConnection.request();
             peerConnection.downloadPiece(index, outputFileName);
             break;
         }catch(Exception e){
