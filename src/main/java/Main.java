@@ -2,13 +2,15 @@ import decoder.ByteBendecoder;
 import decoder.ByteQueue;
 import decoder.Decoder;
 import objects.BencodedDictionary;
+import torrent.download.DownloadForMagnetic;
+import torrent.download.DownloaderForMetaInf;
 import torrent.magnet.MagneticLinkV1;
 import objects.BencodedObject;
 import torrent.file.MetaInfoFile;
 import torrent.download.Downloader;
 import torrent.peer.PeerConnection;
-import torrent.peer.PeerConnectionFromMagentic;
-import torrent.peer.PeerConnectionFromMetaInf;
+import torrent.peer.PeerConnectionForMagentic;
+import torrent.peer.PeerConnectionForMetaInf;
 import torrent.web.Tracker;
 import utils.generate.RandomString;
 // import com.dampcake.bencode.Bencode; - available if you need it!
@@ -46,9 +48,29 @@ void main(String[] args) throws Exception {
         case "magnet_download_piece":
             magnetDownloadPiece(args);
             break;
+        case "magnet_download":
+            magnetDownload(args);
+            break;
 
     }
 
+}
+
+private void magnetDownload(String[] args) {
+    if(args.length != 4)
+        throw new IllegalArgumentException("Download piece requires 5 arguments");
+    String arg = args[1];
+    if(!arg.equals("-o")) throw new IllegalArgumentException("Invalid download piece argument");
+    String outputFileName = args[2];
+    MagneticLinkV1 magneticLinkV1 = new MagneticLinkV1(args[3]);
+    Tracker tracker = new Tracker(magneticLinkV1);
+    Tracker.TrackerResponse response = tracker.track();
+
+    try(Downloader downloader = new DownloadForMagnetic(response, tracker.getPeerId(), magneticLinkV1)){
+        downloader.download(outputFileName);
+    }catch(Exception e){
+        e.printStackTrace();
+    }
 }
 
 private void magnetDownloadPiece(String[] args) throws IOException {
@@ -64,7 +86,7 @@ private void magnetDownloadPiece(String[] args) throws IOException {
     Tracker tracker = new Tracker(magneticLinkV1);
     Tracker.TrackerResponse response = tracker.track();
     for(Tracker.Peer peer : response.getPeers()) {
-        try(PeerConnectionFromMagentic peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
+        try(PeerConnectionForMagentic peerConnection = new PeerConnectionForMagentic(peer, magneticLinkV1, tracker.getPeerId())){
             peerConnection.handshakeWithExtension();
             peerConnection.request();
             peerConnection.downloadPiece(index, outputFileName);
@@ -80,9 +102,9 @@ private void magnetInfo(String[] args){
     Tracker tracker = new Tracker(magneticLinkV1);
     Tracker.TrackerResponse response = tracker.track();
     Tracker.Peer peer = response.getPeers().get(0);
-    try(PeerConnectionFromMagentic peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
+    try(PeerConnectionForMagentic peerConnection = new PeerConnectionForMagentic(peer, magneticLinkV1, tracker.getPeerId())){
         peerConnection.handshakeWithExtension();
-        PeerConnectionFromMagentic.MagneticInfo magneticInfo = peerConnection.request();
+        PeerConnectionForMagentic.MagneticInfo magneticInfo = peerConnection.request();
         System.out.printf("Tracker URL: %s\n", magneticLinkV1.getTracker());
         System.out.printf("Length: %s\n", magneticInfo.getLength());
         System.out.printf("Info Hash: %s\n", magneticLinkV1.getInfoHash());
@@ -101,7 +123,7 @@ private void magneticHandshake(String[] args) {
     Tracker tracker = new Tracker(magneticLinkV1);
     Tracker.TrackerResponse response = tracker.track();
     Tracker.Peer peer = response.getPeers().get(0);
-    try(PeerConnectionFromMagentic peerConnection = new PeerConnectionFromMagentic(peer, magneticLinkV1, tracker.getPeerId())){
+    try(PeerConnectionForMagentic peerConnection = new PeerConnectionForMagentic(peer, magneticLinkV1, tracker.getPeerId())){
         PeerConnection.HandshakeMessage handshakeMessage = peerConnection.handshakeWithExtension();
         System.out.printf("Peer ID: %s\n", handshakeMessage.hexedPeerId());
         System.out.printf("Peer Metadata Extension ID: %s\n", handshakeMessage.getExtensionId());
@@ -129,10 +151,10 @@ private void downloadFile(String[] args) throws IOException {
 
     Tracker.TrackerResponse response = tracker.track();
 
-    try(Downloader downloader = new Downloader(response, metaInfoFile, tracker.getPeerId())){
+    try(Downloader downloader = new DownloaderForMetaInf(response, tracker.getPeerId(), metaInfoFile)){
         downloader.download(outputFileName);
     }catch(Exception e){
-        e.printStackTrace();
+        IO.println(e.getMessage());
     }
 }
 
@@ -150,7 +172,7 @@ private void downloadPiece(String[] args) throws IOException {
 
     Tracker.TrackerResponse response = tracker.track();
     for(Tracker.Peer peer : response.getPeers()) {
-       try(PeerConnection peerConnection = new PeerConnectionFromMetaInf(peer, metaInfoFile, tracker.getPeerId())){
+       try(PeerConnection peerConnection = new PeerConnectionForMetaInf(peer, metaInfoFile, tracker.getPeerId())){
            peerConnection.handshake();
            peerConnection.downloadPiece(index, outputFileName);
            break;
@@ -166,7 +188,7 @@ private static void handshake(String[] args) throws IOException {
     byte[] file = Files.readAllBytes(Path.of(fileName));
     MetaInfoFile metaInfoFile = getMetaInfoFile(file);
     String peerId = RandomString.generatePeerId();
-    try (PeerConnection peerConnection = new PeerConnectionFromMetaInf(peerIpAndPort, metaInfoFile, peerId)) {
+    try (PeerConnection peerConnection = new PeerConnectionForMetaInf(peerIpAndPort, metaInfoFile, peerId)) {
         String handshake = peerConnection.handshake();
         System.out.printf("Peer ID: %s\n", handshake);
     } catch (Exception e) {

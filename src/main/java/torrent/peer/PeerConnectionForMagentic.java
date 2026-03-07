@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PeerConnectionFromMagentic extends PeerConnection {
+public class PeerConnectionForMagentic extends PeerConnection {
 
     public static class MagneticInfo{
 
@@ -57,6 +57,10 @@ public class PeerConnectionFromMagentic extends PeerConnection {
         public long getLength() {
             return length;
         }
+
+        public long getPiecesCount() {
+            return length / pieceLength + (length % pieceLength > 0 ? 1 : 0);
+        }
     }
 
     private final MagneticLinkV1 magneticLink;
@@ -65,17 +69,17 @@ public class PeerConnectionFromMagentic extends PeerConnection {
     private Integer peerExtensionId = 16;
     private MagneticInfo magneticInfo;
 
-    public PeerConnectionFromMagentic(String peer, MagneticLinkV1 magneticLinkV1, String peerId) {
+    public PeerConnectionForMagentic(String peer, MagneticLinkV1 magneticLinkV1, String peerId) {
         this.magneticLink = magneticLinkV1;
         super(peer, peerId);
     }
 
-    public PeerConnectionFromMagentic(String ip, int port, MagneticLinkV1 magneticLinkV1, String peerId) {
+    public PeerConnectionForMagentic(String ip, int port, MagneticLinkV1 magneticLinkV1, String peerId) {
         this.magneticLink = magneticLinkV1;
         super(ip, port, peerId);
     }
 
-    public PeerConnectionFromMagentic(Tracker.Peer peer, MagneticLinkV1 magneticLinkV1, String peerId) {
+    public PeerConnectionForMagentic(Tracker.Peer peer, MagneticLinkV1 magneticLinkV1, String peerId) {
         this.magneticLink = magneticLinkV1;
         super(peer, peerId);
     }

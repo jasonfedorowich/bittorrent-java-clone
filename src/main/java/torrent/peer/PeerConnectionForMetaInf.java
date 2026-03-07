@@ -5,21 +5,21 @@ import torrent.web.Tracker;
 
 import java.util.List;
 
-public class PeerConnectionFromMetaInf extends PeerConnection {
+public class PeerConnectionForMetaInf extends PeerConnection {
 
     private final MetaInfoFile metaInfoFile;
 
-    public PeerConnectionFromMetaInf(String peer, MetaInfoFile metaInfoFile, String peerId) {
+    public PeerConnectionForMetaInf(String peer, MetaInfoFile metaInfoFile, String peerId) {
         this.metaInfoFile = metaInfoFile;
         super(peer, peerId);
     }
 
-    public PeerConnectionFromMetaInf(String ip, int port, MetaInfoFile metaInfoFile, String peerId) {
+    public PeerConnectionForMetaInf(String ip, int port, MetaInfoFile metaInfoFile, String peerId) {
         this.metaInfoFile = metaInfoFile;
         super(ip, port, peerId);
     }
 
-    public PeerConnectionFromMetaInf(Tracker.Peer peer,MetaInfoFile metaInfoFile, String peerId) {
+    public PeerConnectionForMetaInf(Tracker.Peer peer, MetaInfoFile metaInfoFile, String peerId) {
         this.metaInfoFile = metaInfoFile;
         super(peer, peerId);
     }

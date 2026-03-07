@@ -11,7 +11,7 @@ import java.io.IOException;
 
 class PeerConnectionMagneticLinkTest {
 
-    private PeerConnectionFromMagentic peerConnection;
+    private PeerConnectionForMagentic peerConnection;
     private MagneticLinkV1 magneticLink;
 
     @BeforeEach
@@ -20,7 +20,7 @@ class PeerConnectionMagneticLinkTest {
         Tracker tracker = new Tracker(magneticLink);
         Tracker.TrackerResponse response = tracker.track();
         Tracker.Peer peer = response.getPeers().get(0);
-        peerConnection = new PeerConnectionFromMagentic(peer.toString(), magneticLink, tracker.getPeerId());
+        peerConnection = new PeerConnectionForMagentic(peer.toString(), magneticLink, tracker.getPeerId());
 
     }
 

@@ -6,6 +6,7 @@ import objects.BencodedDictionary;
 import objects.BencodedObject;
 import org.junit.jupiter.api.*;
 import torrent.file.MetaInfoFile;
+import torrent.magnet.MagneticLinkV1;
 import torrent.web.Tracker;
 
 import java.io.FileNotFoundException;
@@ -13,22 +14,18 @@ import java.io.IOException;
 import java.io.InputStream;
 
 
-class DownloaderTest {
+class DownloaderMagneticTest {
 
-    private MetaInfoFile metaInfoFile;
+    private MagneticLinkV1 magneticLink;
     private Downloader downloader;
 
     @BeforeEach
     void setUp() throws IOException {
-        InputStream is = DownloaderTest.class.getResourceAsStream("/sample.torrent");
-        byte[] bytes = is.readAllBytes();
-        ByteQueue queue = new ByteQueue(bytes);
-        ByteBendecoder decoder = new ByteBendecoder(queue);
-        BencodedObject object = decoder.decode();
-        metaInfoFile = new MetaInfoFile((BencodedDictionary) object);
-        Tracker tracker = new Tracker(metaInfoFile);
+        magneticLink = new MagneticLinkV1("magnet:?xt=urn:btih:ad42ce8109f54c99613ce38f9b4d87e70f24a165&dn=magnet1.gif&tr=http%3A%2F%2Fbittorrent-test-tracker.codecrafters.io%2Fannounce");
+        Tracker tracker = new Tracker(magneticLink);
         Tracker.TrackerResponse response = tracker.track();
-        downloader = new DownloaderForMetaInf(response, tracker.getPeerId(), metaInfoFile);
+        Tracker.Peer peer = response.getPeers().get(0);
+        downloader = new DownloadForMagnetic(response, tracker.getPeerId(), magneticLink);
     }
 
     @AfterEach
@@ -38,7 +35,7 @@ class DownloaderTest {
     @Test
     @Disabled
     void download() throws FileNotFoundException, InterruptedException {
-        String path = DownloaderTest.class.getResource("/test1.file").getPath();
+        String path = DownloaderMagneticTest.class.getResource("/test1.file").getPath();
         Assertions.assertDoesNotThrow(() -> {
             downloader.download(path);
         });

@@ -2,7 +2,7 @@ package torrent.download;
 
 import torrent.file.MetaInfoFile;
 import torrent.peer.PeerConnection;
-import torrent.peer.PeerConnectionFromMetaInf;
+import torrent.peer.PeerConnectionForMetaInf;
 import torrent.web.Tracker;
 
 import java.io.FileOutputStream;
@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Downloader implements AutoCloseable {
+public abstract class Downloader implements AutoCloseable {
 
 
     class Worker{
@@ -41,24 +41,17 @@ public class Downloader implements AutoCloseable {
             };
         }
     }
-    private final List<PeerConnection> connections = new ArrayList<>();
-    private final MetaInfoFile metaInfoFile;
-    private final String peerId;
+    protected final List<PeerConnection> connections = new ArrayList<>();
+    protected final String peerId;
 
-    public Downloader(Tracker.TrackerResponse response, MetaInfoFile metaInfoFile, String peerId) {
+    public Downloader(Tracker.TrackerResponse response, String peerId) {
         this.peerId = peerId;
-        this.metaInfoFile = metaInfoFile;
         openConnections(response.getPeers());
     }
 
+    public abstract void openConnections(List<Tracker.Peer> peers);
+    public abstract long getPiecesCount();
 
-    private void openConnections(List<Tracker.Peer> peers) {
-        for(Tracker.Peer peer : peers) {
-            PeerConnection peerConnection = new PeerConnectionFromMetaInf(peer, metaInfoFile, peerId);
-            connections.add(peerConnection);
-            peerConnection.handshake();
-        }
-    }
 
 
 
@@ -89,7 +82,7 @@ public class Downloader implements AutoCloseable {
 
     public void download(String outputFileName) throws IOException, InterruptedException {
         Deque<Integer> work = new ConcurrentLinkedDeque<>();
-        int n = (int)metaInfoFile.getInfo().getPiecesCount();
+        int n = (int)getPiecesCount();
         for(int i = 0; i < n; i++) {
             work.add(i);
         }

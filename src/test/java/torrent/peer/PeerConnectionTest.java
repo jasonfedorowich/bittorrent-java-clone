@@ -30,7 +30,7 @@ class PeerConnectionTest {
         Tracker tracker = new Tracker(metaInfoFile);
         Tracker.TrackerResponse response = tracker.track();
         Tracker.Peer peer = response.getPeers().get(0);
-        peerConnection = new PeerConnectionFromMetaInf(peer.toString(), metaInfoFile, tracker.getPeerId());
+        peerConnection = new PeerConnectionForMetaInf(peer.toString(), metaInfoFile, tracker.getPeerId());
 
     }
 
